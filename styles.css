@@ -926,3 +926,41 @@ body.onboarding-active{overflow:auto}
 .guided-next{font-size:13px;padding:9px 15px}
 .guided-skip{max-width:130px;text-align:left;line-height:1.25}
 @media(max-width:780px){.guided-tip{width:min(340px,calc(100vw - 24px))}.guided-instruction{font-size:11px;margin-bottom:10px;padding:8px 9px}.guided-target-badge{font-size:10px;min-height:23px}}
+
+/* Guided tour v4: only whole explanatory blocks receive a dimmed spotlight. */
+.guided-tour{pointer-events:none}
+.guided-highlight{border:2px solid #2688eb;border-radius:12px;background:rgba(38,136,235,.032);box-shadow:0 0 0 4px rgba(38,136,235,.18);transition:none;z-index:1}
+.guided-tour.guided-dim .guided-highlight{background:transparent;box-shadow:0 0 0 9999px rgba(17,30,50,.38),0 0 0 4px rgba(38,136,235,.18)}
+.guided-tour.guided-outline-only .guided-highlight,.guided-tour.guided-tour-action .guided-highlight{box-shadow:0 0 0 5px rgba(38,136,235,.14),0 2px 18px rgba(38,136,235,.12);background:rgba(38,136,235,.045)}
+.guided-tour .guided-tip{width:min(318px,calc(100vw - 24px));padding:14px 16px 13px;max-height:calc(100dvh - 130px);box-shadow:0 10px 32px rgba(22,42,77,.15);border:1px solid #d6e5f6;border-radius:12px;transition:none}
+.guided-tour .guided-tip h2{font-size:17px;margin:8px 0 6px;line-height:1.23}
+.guided-tour .guided-tip p{font-size:12px;line-height:1.48;margin-bottom:9px}
+.guided-tour .guided-instruction{padding:8px 9px;font-size:11px;line-height:1.35;margin-bottom:10px}
+.guided-tour .guided-actions{gap:7px}
+.guided-tour .guided-pointer{z-index:2}
+.guided-tour .guided-tip{z-index:4}
+.guided-tour .guided-target-badge{z-index:3}
+.guided-tour .guided-next{min-height:36px}
+@media(max-width:780px){
+  .guided-tour .guided-tip{width:min(310px,calc(100vw - 20px));padding:12px 13px;max-height:calc(100dvh - 95px)}
+  .guided-tour .guided-tip h2{font-size:16px}
+  .guided-tour .guided-instruction{font-size:10px;margin-bottom:8px}
+  .guided-tour .guided-target-badge{font-size:10px}
+  body.tour-modal-docked .modal-backdrop{align-items:flex-end;padding:0 10px calc(70px + env(safe-area-inset-bottom,0px));backdrop-filter:none;animation:none}
+  body.tour-modal-docked .modal-dialog{width:100%;max-height:calc(100dvh - 318px);min-height:245px;overflow:auto;animation:none;padding:18px 18px 16px}
+  body.tour-modal-docked .modal-head h2{font-size:20px;margin-right:26px}
+  body.tour-modal-docked .guided-tour .guided-tip{width:calc(100vw - 24px);max-width:370px;box-shadow:0 8px 22px rgba(22,42,77,.15)}
+  body.tour-modal-docked .guided-tour .guided-instruction{display:none}
+  body.tour-modal-docked .guided-tour .guided-tip p{margin-bottom:8px}
+}
+@media(max-height:650px) and (max-width:780px){
+  body.tour-modal-docked .modal-dialog{max-height:calc(100dvh - 288px);min-height:180px}
+  body.tour-modal-docked .guided-tour .guided-tip{padding:9px 12px}
+  body.tour-modal-docked .guided-tour .guided-tip h2{margin:4px 0}
+}
+@media(prefers-reduced-motion:reduce){.guided-tour .guided-highlight,.guided-tour .guided-tip{transition:none}}
+
+/* Keep the whole mobile checkout clearly visible below the learning panel. */
+@media(max-width:780px){body.tour-modal-docked .modal-dialog{max-height:calc(100dvh - 370px);min-height:180px}}
+
+@media(max-width:780px){body.tour-modal-docked .modal-dialog{max-height:calc(100dvh - 391px)}}
