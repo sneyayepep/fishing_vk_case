@@ -721,7 +721,6 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
   const saveOnboardingPreview = () => {
     try {sessionStorage.setItem(ONBOARDING_RESUME_KEY,JSON.stringify({role:ui.onboardingRole,step:ui.onboardingStep}));}catch{}
   };
-  const onboardSeen = (role) => {try{return localStorage.getItem(`${ONBOARDING_KEY}-${role}`)==='seen';}catch{return false;}};
   const tourTarget = (step=currentTourStep()) => {
     if(!step?.selector)return null;
     const selector=(innerWidth<=780&&step.mobileSelector)||step.selector;
@@ -896,12 +895,13 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
   const beginTour = (role) => {
     ui.onboardingRole=role;
     if(role==='buyer'){ui.query='';ui.category='Все';ui.inStock=false;ui.minPrice='';ui.maxPrice='';}
-    const wasPreview=ui.onboardingPreview&&savedTour?.role===role;
-    if(!wasPreview)ui.onboardingStep=0;
-    ui.onboarding=!onboardSeen(role)||wasPreview;
+    // Explicit role selection always starts that role's guide, even if completed before.
+    // Moving between screens inside a role does not restart it.
+    ui.onboardingStep=0;
+    ui.onboarding=true;
     ui.onboardingPreview=false;
-    if(ui.onboarding){saveOnboardingPreview();tourGoStep(ui.onboardingStep);}
-    else go(role==='seller'?'studio/overview':'market');
+    saveOnboardingPreview();
+    tourGoStep(0);
   };
 
   const render = () => {const isWelcome=route()==='welcome';document.documentElement.dataset.theme=model.theme;document.body.classList.toggle('filters-visible',ui.filtersOpen);document.body.classList.toggle('welcome-mode',isWelcome);document.body.classList.toggle('onboarding-active',!!ui.onboarding);document.body.classList.toggle('tour-modal-docked',!!ui.onboarding&&currentTourStep()?.spotlight==='modal');document.title=studio()?'Речной Бисквит · VK Маркет':'VK Маркет';document.getElementById('app').innerHTML = `${isWelcome?'':head()}<div class="shell ${isWelcome?'welcome-shell':''}">${isWelcome?'':sidebar()}<main id="main" class="main-content"><div class="content-wrap">${content()}</div></main></div>${isWelcome?'':filterDrawer()}${modal()}${ui.toast?`<div class="toast" role="status">${icon('check',19)} ${escapeHTML(ui.toast)}</div>`:''}${isWelcome?'':`<nav class="mobile-bottom">${(studio()?sellerNav.slice(0,5):topNav).map(([r,g,n])=>`<button class="${route()===r?'active':''}" data-action="navigate" data-route="${r}">${icon(g,21)}<span>${n}</span></button>`).join('')}</nav>`}<div id="onboarding-root">${onboardingMarkup()}</div><div id="onboarding-resume-root">${onboardingResumeMarkup()}</div>`;scheduleTourPosition();};
