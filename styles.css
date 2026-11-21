@@ -357,3 +357,28 @@ body.filters-visible { overflow: hidden; }
 @media (max-width: 570px) {
   .product-detail .detail-gallery > .product-visual.detail-photo { aspect-ratio: 1 / 1; }
 }
+
+/* Single seller context and category-level analytics (VK Market pilot) */
+.seller-context { display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:14px;padding:12px 16px;margin-bottom:16px;min-width:0; }
+.seller-context .seller-avatar { flex-shrink:0; }
+.seller-context>div { flex:1;min-width:0;display:flex;flex-direction:column;gap:3px; }
+.seller-context strong { font-size:13px;line-height:1.35; }
+.seller-context span:not(.seller-avatar) { font-size:11px;color:var(--muted-strong);line-height:1.35; }
+.seller-context-link { color:var(--accent);display:flex;align-items:center;gap:6px;font-size:12px;font-weight:650;flex-shrink:0;padding:8px 9px;border-radius:8px; }
+.seller-context-link:hover { background:var(--accent-soft); }
+.seller-orders-stats { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.orders-analytics { margin:4px 0 18px; }
+.orders-analytics>.section-header { margin-bottom:13px; }
+.orders-analytics .stat-card { min-width:0; }
+.analytics-note { font-size:11px;color:var(--muted-strong);margin:10px 3px 0;line-height:1.5; }
+.shop-analytics-heading { margin:24px 0 13px; }
+.category-analytics { margin:18px 0; }
+.category-analytics .data-table { min-width:580px; }
+.category-analytics .data-table td:first-child { color:var(--text); }
+.analytics-toolbar label { margin-left:0;white-space:nowrap; }
+.analytics-toolbar label select { width:min(210px,100%);max-width:210px; }
+.analytics-toolbar label:last-of-type select { max-width:240px;width:210px; }
+.analytics-toolbar { row-gap:10px; }
+@media (max-width: 1100px) { .analytics-toolbar label { flex:1 1 190px; } .analytics-toolbar label select { width:100%;max-width:none; } .analytics-toolbar label:last-of-type select { width:100%;max-width:none; } }
+@media (max-width: 700px) { .seller-context { padding:12px;gap:9px;flex-wrap:wrap; } .seller-context>div { flex:1 1 65%; } .seller-context-link { margin-left:auto;padding:7px 0 2px; } .seller-orders-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .seller-orders-stats .stat-card:first-child { grid-column:span 2; } .analytics-toolbar label { flex:1 1 100%;justify-content:space-between; } .analytics-toolbar label select, .analytics-toolbar label:last-of-type select { max-width:70%;width:70%; } }
+@media (max-width: 390px) { .seller-context span:not(.seller-avatar) { font-size:10px; } .seller-orders-stats .stat-card>strong { font-size:21px; } }
