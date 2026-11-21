@@ -603,3 +603,18 @@ body.filters-visible { overflow: hidden; }
 @media(max-width:640px) { .returns-guide{flex-wrap:wrap;gap:12px;padding:16px}.returns-guide>div:nth-child(2){flex-basis:calc(100% - 78px)}.returns-guide>.btn{margin-left:auto} }
 
 .product-visual.asset-photo .product-illustration { opacity:0; }
+
+/* Nationwide marketplace pilot: destination is selected in demo, origin varies by seller. */
+.buyer-city{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;color:var(--muted-strong);font-size:12px;font-weight:650}
+.buyer-city svg{color:var(--accent)}
+.product-origin{display:block;color:var(--muted);font-size:11px;line-height:1.25;margin-top:2px;margin-bottom:2px}
+/* Cards remain visually stable when hovering; links and buttons are still interactive. */
+.product-card, .product-card:hover, html[data-theme="dark"] .product-card:hover{transform:none!important;box-shadow:var(--shadow)!important;border-color:transparent!important;transition:none!important}
+.product-card:hover .product-visual img{transform:none!important}
+.product-card .product-visual img{transition:none!important}
+.product-picture:hover{transform:none!important}
+/* Modal height and scroll stay stationary while only the delivery details change. */
+.modal-backdrop:has(.checkout-form){align-items:flex-start;overflow-y:auto;overscroll-behavior:contain}
+.modal-dialog:has(.checkout-form){margin:clamp(12px,3vh,30px) auto;max-height:calc(100dvh - 24px);animation:none!important}
+@media(max-width:850px){.buyer-city{font-size:11px}}
+@media(max-width:670px){.buyer-city{display:none}}
