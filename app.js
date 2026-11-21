@@ -234,7 +234,16 @@
     try{localStorage.setItem(STORAGE,JSON.stringify(model));}catch{}
   }
   const ONBOARDING_KEY = 'vk-market-intro-v1';
-  let ui = {onboarding:false, onboardingStep:0,category:'Все', query:'', sort:'popular', minPrice:'', maxPrice:'', inStock:false, filtersOpen:false, filterDraft:null, period:30, metric:'opens', analyticsCategory:'Все', analyticsProduct:'all', modal:null, editing:null, toast:'', sidebar:false, checkoutDraft:null, currentOrder:null, currentProduct:null, currentReturn:null, currentSource:null};
+  const ONBOARDING_RESUME_KEY = 'vk-market-intro-example-v1';
+  const savedIntroStep = (() => {
+    try {
+      const raw = sessionStorage.getItem(ONBOARDING_RESUME_KEY);
+      if (raw === null) return null;
+      const step = Number(raw);
+      return Number.isInteger(step) && step >= 0 && step < 5 ? step : null;
+    } catch { return null; }
+  })();
+  let ui = {onboarding:false, onboardingPreview:savedIntroStep !== null, onboardingStep:savedIntroStep ?? 0,category:'Все', query:'', sort:'popular', minPrice:'', maxPrice:'', inStock:false, filtersOpen:false, filterDraft:null, period:30, metric:'opens', analyticsCategory:'Все', analyticsProduct:'all', modal:null, editing:null, toast:'', sidebar:false, checkoutDraft:null, currentOrder:null, currentProduct:null, currentReturn:null, currentSource:null};
   const persist = () => { try { localStorage.setItem(STORAGE, JSON.stringify(model)); } catch{} };
   // The first-run guide is separate from shop data and never resets orders.
   if (model.theme !== 'light') { model.theme = 'light'; persist(); }
@@ -449,7 +458,7 @@
   const topNav = [ ['market','home','Маркет'],['search','search','Поиск'],['favorites','heart','Избранное'],['cart','cart','Корзина'],['profile','user','Профиль'] ];
   const sellerNav = [ ['studio/overview','grid','Обзор'],['studio/products','box','Товары'],['studio/orders','bag','Заказы'],['studio/returns','refresh','Возвраты'],['studio/drops','fire','Дропы'],['studio/analytics','chart','Аналитика'],['studio/settings','settings','Настройки'] ];
   const navLink = ([path,glyph,name]) => `<button class="nav-item ${route()===path || (path==='profile'&&route()==='orders') ? 'selected':''}" data-action="navigate" data-route="${path}" aria-label="${name}">${icon(glyph,20)}<span>${name}</span>${path==='cart'&&model.cart.length?`<b class="nav-count">${model.cart.reduce((s,x)=>s+x.qty,0)}</b>`:''}</button>`;
-  const sidebar = () => `<aside class="sidebar ${ui.sidebar?'sidebar-open':''}"><div class="sidebar-section"><div class="sidebar-label">${studio()?'Речной Бисквит':'Навигация'}</div>${(studio()?sellerNav:topNav).map(navLink).join('')}${!studio()?`<button class="nav-item ${route()==='returns'?'selected':''}" data-action="navigate" data-route="returns">${icon('refresh',20)}<span>Возвраты</span></button>`:''}</div><div class="sidebar-footer"><button class="side-utility" data-action="open-onboarding">${icon('info',20)}<span>Как это работает</span></button><button class="side-utility" data-action="navigate" data-route="welcome">${icon('layers',20)}<span>Сменить режим</span></button>${studio()?`<button class="side-utility" data-action="navigate" data-route="studio/settings">${icon('settings',20)}<span>Настройки</span></button>`:''}</div></aside>`;
+  const sidebar = () => `<aside class="sidebar ${ui.sidebar?'sidebar-open':''}"><div class="sidebar-section"><div class="sidebar-label">${studio()?'Речной Бисквит':'Навигация'}</div>${(studio()?sellerNav:topNav).map(navLink).join('')}${!studio()?`<button class="nav-item ${route()==='returns'?'selected':''}" data-action="navigate" data-route="returns">${icon('refresh',20)}<span>Возвраты</span></button>`:''}</div><div class="sidebar-footer"><button class="side-utility" data-action="open-onboarding">${icon('info',20)}<span>${ui.onboardingPreview?'Продолжить обучение':'Как это работает'}</span></button><button class="side-utility" data-action="navigate" data-route="welcome">${icon('layers',20)}<span>Сменить режим</span></button>${studio()?`<button class="side-utility" data-action="navigate" data-route="studio/settings">${icon('settings',20)}<span>Настройки</span></button>`:''}</div></aside>`;
   const head = () => `<header class="topbar"><div class="topbar-inner"><button class="mobile-menu icon-btn" aria-label="Открыть меню" data-action="toggle-sidebar">${icon('grid',22)}</button><button class="brand" data-action="navigate" data-route="market"><span class="brand-mark">vk</span><span>Маркет</span></button><form class="global-search" data-form="global-search"><span>${icon('search',18)}</span><input name="q" value="${escapeHTML(ui.query)}" placeholder="Поиск по товарам и магазинам" aria-label="Поиск товаров"/><button aria-label="Искать" type="submit">${icon('search',17)}</button></form><div class="header-actions"><span class="buyer-city" title="Город покупателя">${icon('location',16)} Рыбинск ${icon('down',14)}</span><button class="header-cart icon-btn" aria-label="Корзина" title="Корзина" data-action="navigate" data-route="cart">${icon('cart',20)}${model.cart.length?'<i></i>':''}</button><button class="avatar-btn" title="Профиль" data-action="navigate" data-route="profile">ВК</button></div></div></header>`;
   const pImage = (p, type='') => `<div class="product-visual ${type} ${String(p.photo||'').startsWith('./assets/')?'asset-photo':''}" style="--visual:${escapeHTML(p.color||'#e8ebf0')}">${illustration(p)}<img src="${escapeHTML(p.photo || '')}" alt="${escapeHTML(p.title)}" loading="lazy" onerror="this.style.display='none'" /></div>`;
   const sellerAvatar = (s, size='') => `<span class="seller-avatar ${size}" style="background:${s.color}">${escapeHTML(s.avatar)}</span>`;
@@ -661,15 +670,41 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
     {key:'analytics',icon:'chart',label:'Аналитика',title:'Что приносит магазину заказы',description:'В кабинете собраны продажи, средний чек, конверсии из публикаций, оценки товаров и расчёт комиссии сервиса.',points:['Периоды 7, 30 и 90 дней','Фильтр по категории и конкретному товару','Показатели шопсов отделены от оформленных заказов'],route:'studio/analytics',action:'Перейти в аналитику'},
     {key:'community',icon:'user',label:'Сообщества',title:'Магазин остаётся частью VK',description:'Магазин связан с существующим сообществом. Покупатель видит продавца в карточке товара, может перейти в сообщество и открыть публикации с товарами.',points:['Одна витрина — товары и история сообщества','Шопсы связывают контент и карточки','Обычные сообщения VK остаются каналом связи'],route:'community/archive',action:'Открыть сообщество'}
   ];
+  const onboardingResumeMarkup = () => {
+    if (!ui.onboardingPreview || ui.onboarding || route() === 'welcome') return '';
+    const step = onboardingSteps[ui.onboardingStep] || onboardingSteps[0];
+    return `<button type="button" class="onboarding-resume" data-action="onboarding-resume" aria-label="Вернуться к обучению: шаг ${ui.onboardingStep+1} из ${onboardingSteps.length}, ${escapeHTML(step.label)}"><span class="onboarding-resume-icon">${icon('back',18)}</span><span class="onboarding-resume-copy"><strong>Вернуться к обучению</strong><small>Шаг ${ui.onboardingStep+1} из ${onboardingSteps.length} · ${escapeHTML(step.label)}</small></span>${icon('chevron',16)}</button>`;
+  };
   const onboardingMarkup = () => {
     if(!ui.onboarding) return '';
     const step=onboardingSteps[ui.onboardingStep]||onboardingSteps[0],i=ui.onboardingStep,total=onboardingSteps.length;
     return `<div class="intro-backdrop" data-action="intro-backdrop"><section class="intro-dialog" role="dialog" aria-modal="true" aria-labelledby="intro-title" aria-describedby="intro-description"><div class="intro-top"><span class="intro-label">Знакомство с Маркетом</span><button type="button" class="intro-close" data-action="onboarding-close" aria-label="Закрыть знакомство">${icon('close',20)}</button></div><div class="intro-progress" role="progressbar" aria-label="Шаг знакомства" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${i+1}">${onboardingSteps.map((s,n)=>`<span class="${n<=i?'filled':''}"></span>`).join('')}</div><div class="intro-content" key="${step.key}"><div class="intro-icon">${icon(step.icon,29)}</div><p class="intro-step">${i+1} из ${total} · ${step.label}</p><h2 id="intro-title">${step.title}</h2><p id="intro-description">${step.description}</p><ul class="intro-points">${step.points.map(p=>`<li>${icon('check',17)} <span>${p}</span></li>`).join('')}</ul><button type="button" class="intro-example" data-action="onboarding-example" data-route="${step.route}">${step.action} ${icon('arrow',16)}</button></div><div class="intro-bottom"><button type="button" class="intro-text-button" data-action="onboarding-close">Пропустить</button><div class="intro-navigation">${i>0?`<button class="btn outline" data-action="onboarding-prev" type="button">Назад</button>`:''}<button class="btn primary" data-action="${i===total-1?'onboarding-close':'onboarding-next'}" type="button">${i===total-1?'Начать работу':'Далее'} ${icon(i===total-1?'check':'arrow',17)}</button></div></div><p class="intro-caveat">Примеры заказов, тарифов и выплат в этой версии учебные; реальные списания и отправления не выполняются.</p></section></div>`;
   };
-  const refreshOnboarding = () => {const root=document.getElementById('onboarding-root');if(!root)return;root.innerHTML=onboardingMarkup();document.body.classList.toggle('onboarding-active',!!ui.onboarding);if(ui.onboarding)root.querySelector('.intro-dialog .intro-close')?.focus({preventScroll:true});};
+  const refreshOnboarding = () => {
+    const root=document.getElementById('onboarding-root');
+    if(!root)return;
+    root.innerHTML=onboardingMarkup();
+    const resumeRoot=document.getElementById('onboarding-resume-root');
+    if(resumeRoot) resumeRoot.innerHTML=onboardingResumeMarkup();
+    document.body.classList.toggle('onboarding-active',!!ui.onboarding);
+    if(ui.onboarding)root.querySelector('.intro-dialog .intro-close')?.focus({preventScroll:true});
+  };
+  const saveOnboardingPreview = () => {try{sessionStorage.setItem(ONBOARDING_RESUME_KEY,String(ui.onboardingStep));}catch{}};
   const onboardSeen = () => {try{return localStorage.getItem(ONBOARDING_KEY)==='seen';}catch{return false;}};
-  const closeOnboarding = () => {ui.onboarding=false;try{localStorage.setItem(ONBOARDING_KEY,'seen');}catch{}refreshOnboarding();};
-  const render = () => {const isWelcome=route()==='welcome';document.documentElement.dataset.theme=model.theme;document.body.classList.toggle('filters-visible',ui.filtersOpen);document.body.classList.toggle('welcome-mode',isWelcome);document.body.classList.toggle('onboarding-active',!!ui.onboarding);document.title=studio()?'Речной Бисквит · VK Маркет':'VK Маркет';document.getElementById('app').innerHTML = `${isWelcome?'':head()}<div class="shell ${isWelcome?'welcome-shell':''}">${isWelcome?'':sidebar()}<main id="main" class="main-content"><div class="content-wrap">${content()}</div></main></div>${isWelcome?'':filterDrawer()}${modal()}${ui.toast?`<div class="toast" role="status">${icon('check',19)} ${escapeHTML(ui.toast)}</div>`:''}${isWelcome?'':`<nav class="mobile-bottom">${(studio()?sellerNav.slice(0,5):topNav).map(([r,g,n])=>`<button class="${route()===r?'active':''}" data-action="navigate" data-route="${r}">${icon(g,21)}<span>${n}</span></button>`).join('')}</nav>`}<div id="onboarding-root">${onboardingMarkup()}</div>`;};
+  const closeOnboarding = () => {
+    ui.onboarding=false;
+    ui.onboardingPreview=false;
+    try{localStorage.setItem(ONBOARDING_KEY,'seen');sessionStorage.removeItem(ONBOARDING_RESUME_KEY);}catch{}
+    refreshOnboarding();
+  };
+  const resumeOnboarding = () => {
+    ui.onboardingPreview=false;
+    ui.onboarding=true;
+    ui.sidebar=false;
+    render();
+    requestAnimationFrame(()=>document.querySelector('.intro-close')?.focus({preventScroll:true}));
+  };
+  const render = () => {const isWelcome=route()==='welcome';document.documentElement.dataset.theme=model.theme;document.body.classList.toggle('filters-visible',ui.filtersOpen);document.body.classList.toggle('welcome-mode',isWelcome);document.body.classList.toggle('onboarding-active',!!ui.onboarding);document.title=studio()?'Речной Бисквит · VK Маркет':'VK Маркет';document.getElementById('app').innerHTML = `${isWelcome?'':head()}<div class="shell ${isWelcome?'welcome-shell':''}">${isWelcome?'':sidebar()}<main id="main" class="main-content"><div class="content-wrap">${content()}</div></main></div>${isWelcome?'':filterDrawer()}${modal()}${ui.toast?`<div class="toast" role="status">${icon('check',19)} ${escapeHTML(ui.toast)}</div>`:''}${isWelcome?'':`<nav class="mobile-bottom">${(studio()?sellerNav.slice(0,5):topNav).map(([r,g,n])=>`<button class="${route()===r?'active':''}" data-action="navigate" data-route="${r}">${icon(g,21)}<span>${n}</span></button>`).join('')}</nav>`}<div id="onboarding-root">${onboardingMarkup()}</div><div id="onboarding-resume-root">${onboardingResumeMarkup()}</div>`;};
   const notify = (text) => {ui.toast=text;render();clearTimeout(notify.timer);notify.timer=setTimeout(()=>{ui.toast='';const node=document.querySelector('.toast');if(node)node.remove();},3200);};
   const countdown = (date) => {const sec=Math.max(0,Math.floor((new Date(date).getTime()-Date.now())/1000));const days=Math.floor(sec/86400),hours=Math.floor((sec%86400)/3600),mins=Math.floor((sec%3600)/60);return `${String(days).padStart(2,'0')} дн : ${String(hours).padStart(2,'0')} ч : ${String(mins).padStart(2,'0')} мин`;};
   const addToCart = (id) => {const p=product(id);if(!p||p.stock<=0)return notify('Товар закончился');const belongsToDrop=model.drops.find(d=>d.itemIds.includes(id)&&d.seller===p.seller);if(model.cart.length&&product(model.cart[0].id)?.seller!==p.seller)return notify('В одном заказе можно оформить товары только одного продавца');const item=model.cart.find(x=>x.id===id);if(item){if(item.qty>=p.stock)return notify('Больше нет в наличии');if(belongsToDrop?.status==='live'&&item.qty>=belongsToDrop.limit)return notify('Достигнут лимит дропа на покупателя');item.qty++;}else model.cart.push({id,qty:1});if(ui.currentSource?.productId===id){const item=model.cart.find(x=>x.id===id);if(item)item.sourcePostId=ui.currentSource.postId;ui.currentSource=null;}persist();notify('Товар добавлен в корзину');};
@@ -785,18 +820,30 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
     }
     case 'navigate':{const r=el.dataset.route;if(!r.startsWith('product/'))ui.currentSource=null;go(r);break;}
     case 'choose-role':{
-      ui.onboarding=!onboardSeen();
-      ui.onboardingStep=0;
+      const resume = ui.onboardingPreview;
+      ui.onboarding=resume || !onboardSeen();
+      if(!resume) ui.onboardingStep=0;
+      ui.onboardingPreview=false;
       go(el.dataset.route);
       if(ui.onboarding)requestAnimationFrame(()=>document.querySelector('.intro-close')?.focus({preventScroll:true}));
       break;
     }
-    case 'open-onboarding':ui.onboardingStep=0;ui.onboarding=true;ui.sidebar=false;render();requestAnimationFrame(()=>document.querySelector('.intro-close')?.focus({preventScroll:true}));break;
-    case 'onboarding-next':ui.onboardingStep=Math.min(onboardingSteps.length-1,ui.onboardingStep+1);refreshOnboarding();break;
-    case 'onboarding-prev':ui.onboardingStep=Math.max(0,ui.onboardingStep-1);refreshOnboarding();break;
+    case 'open-onboarding':
+      if(!ui.onboardingPreview)ui.onboardingStep=0;
+      resumeOnboarding();
+      break;
+    case 'onboarding-resume':resumeOnboarding();break;
+    case 'onboarding-next':ui.onboardingStep=Math.min(onboardingSteps.length-1,ui.onboardingStep+1);saveOnboardingPreview();refreshOnboarding();break;
+    case 'onboarding-prev':ui.onboardingStep=Math.max(0,ui.onboardingStep-1);saveOnboardingPreview();refreshOnboarding();break;
     case 'onboarding-close':closeOnboarding();break;
     case 'intro-backdrop':if(el===originalTarget)closeOnboarding();break;
-    case 'onboarding-example':{const target=el.dataset.route;closeOnboarding();go(target);break;}
+    case 'onboarding-example':{
+      ui.onboarding=false;
+      ui.onboardingPreview=true;
+      saveOnboardingPreview();
+      go(el.dataset.route);
+      break;
+    }
 
     case 'open-search':go('search');break;
     case 'switch-buyer':go('market');break;

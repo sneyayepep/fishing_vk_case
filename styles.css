@@ -846,3 +846,41 @@ body.onboarding-active {overflow:hidden;}
   .intro-caveat {font-size:10px;}
 }
 @media(prefers-reduced-motion:reduce) { .intro-dialog,.intro-content {animation:none!important;transition:none!important;} }
+
+/* The onboarding stays in progress while its example is open. */
+.onboarding-resume {
+  position:fixed;
+  right:22px;
+  bottom:23px;
+  z-index:45;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  max-width:calc(100vw - 30px);
+  min-height:60px;
+  padding:11px 14px;
+  background:var(--panel,#fff);
+  color:var(--text,#17191d);
+  border:1px solid var(--stroke,#e5e9f0);
+  border-radius:12px;
+  box-shadow:0 10px 36px rgba(19,43,77,.16);
+  text-align:left;
+  cursor:pointer;
+}
+.onboarding-resume:hover {background:var(--hover,#f7f9fc);}
+.onboarding-resume:focus-visible {outline:3px solid #2688eb;outline-offset:3px;}
+.onboarding-resume-icon {
+  width:36px;height:36px;border-radius:9px;
+  display:grid;place-items:center;flex-shrink:0;
+  color:#2688eb;background:#eaf3ff;
+}
+.onboarding-resume-copy {display:grid;gap:4px;min-width:0;}
+.onboarding-resume-copy strong {font-size:13px;font-weight:700;white-space:nowrap;}
+.onboarding-resume-copy small {font-size:11px;color:var(--muted,#7d8897);white-space:nowrap;}
+.onboarding-resume > svg:last-child {color:#8494a8;flex-shrink:0;}
+@media(max-width:780px) {
+  .onboarding-resume {right:12px;bottom:calc(77px + env(safe-area-inset-bottom, 0px));min-height:54px;padding:9px 11px;gap:9px;}
+  .onboarding-resume-icon {width:32px;height:32px;}
+  .onboarding-resume-copy strong {font-size:12px;}
+  .onboarding-resume-copy small {font-size:10px;}
+}
