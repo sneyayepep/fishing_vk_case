@@ -837,9 +837,16 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
       return {x:c.x+dx*k,y:c.y+dy*k};
     };
     const start=boundary(tp,center(a)),end=boundary(a,center(tp));
-    const d=`M ${start.x.toFixed(1)} ${start.y.toFixed(1)} Q ${((start.x+end.x)/2).toFixed(1)} ${((start.y+end.y)/2-20).toFixed(1)} ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
-    arrow.setAttribute('viewBox',`0 0 ${innerWidth} ${innerHeight}`);
-    shell.querySelectorAll('.guided-pointer-halo,.guided-pointer-line').forEach(p=>p.setAttribute('d',d));
+    const arrowDistance=Math.hypot(end.x-start.x,end.y-start.y);
+    const shouldShowArrow=arrowDistance>=150;
+    if(shouldShowArrow){
+      const d=`M ${start.x.toFixed(1)} ${start.y.toFixed(1)} Q ${((start.x+end.x)/2).toFixed(1)} ${((start.y+end.y)/2-20).toFixed(1)} ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
+      arrow.setAttribute('viewBox',`0 0 ${innerWidth} ${innerHeight}`);
+      shell.querySelectorAll('.guided-pointer-halo,.guided-pointer-line').forEach(p=>p.setAttribute('d',d));
+      arrow.style.display='block';
+    }else{
+      arrow.style.display='none';
+    }
     // The label never covers the actual button or the explanatory bubble.
     if(badge){
       const labelW=111,labelH=25;
