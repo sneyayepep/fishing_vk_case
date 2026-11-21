@@ -1136,3 +1136,11 @@ body.onboarding-active{overflow:auto}
 @media(prefers-reduced-motion:reduce) {
   .logistics-settings .delivery-method-chevron svg {transition:none;}
 }
+
+
+/* Seller preview and visible demo reset control */
+.seller-preview-note{margin:0 0 14px;padding:12px 16px;border-radius:10px;background:#eaf3ff;color:#2362a5;font-size:13px;font-weight:600}
+.sidebar-footer .reset-demo-button{color:#a14747;margin-top:6px;border-top:1px solid var(--stroke);border-radius:0;padding-top:10px}
+.sidebar-footer .reset-demo-button svg{color:#bd4a4a}
+.sidebar-footer .reset-demo-button:hover{color:#9b2424;background:#fff1f1;border-radius:8px}
+@media(max-width:780px){.seller-preview-note{font-size:12px;line-height:1.5}}
