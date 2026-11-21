@@ -233,17 +233,15 @@
     model.deliveryProvidersVersion='rybinsk-providers-v2';
     try{localStorage.setItem(STORAGE,JSON.stringify(model));}catch{}
   }
-  const ONBOARDING_KEY = 'vk-market-intro-v1';
-  const ONBOARDING_RESUME_KEY = 'vk-market-intro-example-v1';
-  const savedIntroStep = (() => {
+  const ONBOARDING_KEY = 'vk-market-guided-tour-v2';
+  const ONBOARDING_RESUME_KEY = 'vk-market-guided-tour-session-v2';
+  const savedTour = (() => {
     try {
-      const raw = sessionStorage.getItem(ONBOARDING_RESUME_KEY);
-      if (raw === null) return null;
-      const step = Number(raw);
-      return Number.isInteger(step) && step >= 0 && step < 5 ? step : null;
+      const value=JSON.parse(sessionStorage.getItem(ONBOARDING_RESUME_KEY)||'null');
+      return value && ['buyer','seller'].includes(value.role) && Number.isInteger(value.step) && value.step>=0 ? value : null;
     } catch { return null; }
   })();
-  let ui = {onboarding:false, onboardingPreview:savedIntroStep !== null, onboardingStep:savedIntroStep ?? 0,category:'Все', query:'', sort:'popular', minPrice:'', maxPrice:'', inStock:false, filtersOpen:false, filterDraft:null, period:30, metric:'opens', analyticsCategory:'Все', analyticsProduct:'all', modal:null, editing:null, toast:'', sidebar:false, checkoutDraft:null, currentOrder:null, currentProduct:null, currentReturn:null, currentSource:null};
+  let ui = {onboarding:false, onboardingPreview:!!savedTour, onboardingStep:savedTour?.step??0, onboardingRole:savedTour?.role??'buyer',category:'Все', query:'', sort:'popular', minPrice:'', maxPrice:'', inStock:false, filtersOpen:false, filterDraft:null, period:30, metric:'opens', analyticsCategory:'Все', analyticsProduct:'all', modal:null, editing:null, toast:'', sidebar:false, checkoutDraft:null, currentOrder:null, currentProduct:null, currentReturn:null, currentSource:null};
   const persist = () => { try { localStorage.setItem(STORAGE, JSON.stringify(model)); } catch{} };
   // The first-run guide is separate from shop data and never resets orders.
   if (model.theme !== 'light') { model.theme = 'light'; persist(); }
@@ -410,7 +408,7 @@
   const route = () => decodeURIComponent(location.hash.replace(/^#\/?/,'') || 'welcome');
   const studio = () => route().startsWith('studio/');
   const activeView = () => route().split('/')[0];
-  const go = (r) => { ui.modal=null; ui.sidebar=false; if(location.hash === '#'+r){render();} else location.hash = r; window.scrollTo({top:0,behavior:'smooth'}); };
+  const go = (r) => { ui.modal=null; ui.sidebar=false; if(location.hash === '#'+r){render();} else location.hash = r; window.scrollTo({top:0,behavior:ui.onboarding?'instant':'smooth'}); };
   const icons = {
     search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
     home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M9 21v-8h6v8"/>',
@@ -475,10 +473,10 @@ const sellerContext = () => `<div class="seller-context" aria-label="Текущ�
   const pageIntro = (eyebrow,title,sub,actions='') => `${studio()?sellerContext():''}<div class="page-intro"><div><div class="eyebrow">${eyebrow}</div><h1>${title}</h1>${sub?`<p>${sub}</p>`:''}</div>${actions?`<div class="page-tools">${actions}</div>`:''}</div>`;
   const sectionHeader = (title,sub='',link='',to='') => `<div class="section-header"><div><h2>${title}</h2>${sub?`<p>${sub}</p>`:''}</div>${link?`<button class="text-link" data-action="navigate" data-route="${to}">${link} ${icon('arrow',16)}</button>`:''}</div>`;
   
-const welcome = () => `<div class="welcome-page"><div class="welcome-head"><span class="welcome-logo"><span class="brand-mark">vk</span> Маркет</span><div class="welcome-kicker">Покупки и продажи через сообщества</div><h1>Добро пожаловать в <em>Маркет</em></h1><p>Одна платформа для покупок из публикаций VK и управления продажами. Выберите, с какой стороны хотите начать.</p></div><div class="welcome-choice"><button class="welcome-role buyer" data-action="choose-role" data-route="market"><span class="welcome-icon">${icon('cart',28)}</span><span class="welcome-role-text"><strong>Я покупатель</strong><small>Товары, любимые магазины, доставки и возвраты</small></span><span class="welcome-arrow">${icon('arrow',22)}</span></button><button class="welcome-role seller" data-action="choose-role" data-route="studio/overview"><span class="welcome-icon">${icon('grid',28)}</span><span class="welcome-role-text"><strong>Я продавец</strong><small>Товары, дропы, шопсы, заказы и аналитика магазина</small></span><span class="welcome-arrow">${icon('arrow',22)}</span></button></div><div class="welcome-note">После выбора режима можно пройти короткое знакомство с возможностями Маркета.</div></div>`;
+const welcome = () => `<div class="welcome-page"><div class="welcome-head"><span class="welcome-logo"><span class="brand-mark">vk</span> Маркет</span><div class="welcome-kicker">Покупки и продажи через сообщества</div><h1>Добро пожаловать в <em>Маркет</em></h1><p>Одна платформа для покупок из публикаций VK и управления продажами. Выберите, с какой стороны хотите начать.</p></div><div class="welcome-choice"><button class="welcome-role buyer" data-action="choose-role" data-route="market"><span class="welcome-icon">${icon('cart',28)}</span><span class="welcome-role-text"><strong>Я покупатель</strong><small>Товары, любимые магазины, доставки и возвраты</small></span><span class="welcome-arrow">${icon('arrow',22)}</span></button><button class="welcome-role seller" data-action="choose-role" data-route="studio/overview"><span class="welcome-icon">${icon('grid',28)}</span><span class="welcome-role-text"><strong>Я продавец</strong><small>Товары, дропы, шопсы, заказы и аналитика магазина</small></span><span class="welcome-arrow">${icon('arrow',22)}</span></button></div></div>`;
   const shopPost = (post) => {const p=product(post.productId);if(!p)return '';return `<article class="shop-post panel"><div class="shop-post-head">${sellerAvatar(community('archive'))}<div><b>Речной Бисквит</b><small>${escapeHTML(post.date)} · Публикация сообщества</small></div><span class="shop-post-tag">Шопс</span></div><p class="shop-post-copy">${escapeHTML(post.text)}</p><button type="button" class="shop-post-image" data-action="shop-open" data-id="${p.id}" data-post="${post.id}" aria-label="Посмотреть товар из публикации">${pImage(p)}<span>Товар в публикации · ${money(p.price)} ${icon('arrow',18)}</span></button><div class="shop-attachment"><div>${pImage(p)}<span><strong>${escapeHTML(p.title)}</strong><small>${money(p.price)} · ${p.stock?'В наличии':'Распродано'}</small></span></div><div class="shop-actions">${button('О товаре','shop-open','outline',`data-id="${p.id}" data-post="${post.id}"`)}${button(`${icon('cart',16)} В корзину`,'shop-buy','primary',`data-id="${p.id}" data-post="${post.id}" ${p.stock?'':'disabled'}`)}</div></div><div class="shop-foot">${icon('heart',17)} 124 <span>${icon('comment',17)} 12</span><small>Реакции — пример · переходы и покупки из этого поста учитываются отдельно</small></div></article>`;};
   
-const market = () => `<div class="market-page"><div class="hero"><div class="hero-text"><span class="hero-overline">ПОКУПКИ ИЗ СООБЩЕСТВ VK <span class="hero-star">✦</span></span><h1>Маркет находок<br/>из <em>сообществ VK</em></h1><p>Товары и авторские коллекции из сообществ ВКонтакте. Выбирайте магазины по всей России, оформляйте заказы и следите за доставкой в одном месте.</p><div class="hero-actions">${button(`Смотреть каталог ${icon('arrow',18)}`,'open-search','primary btn-lg')}${button(`Открыть дропы ${icon('fire',17)}`,'scroll-drops','light btn-lg')}</div></div><div class="hero-image" role="img" aria-label="Товары и коллекции магазинов ВКонтакте">${illustration(product('p1'))}<img src="${escapeHTML(product('p1')?.photo||photos.coffee)}" alt="Торт Речной закат"/><div class="hero-floating"><span class="float-icon">${icon('spark',17)}</span><div>Магазины по всей России<br/><strong>Покупки из публикаций и витрин</strong></div></div></div><span class="hero-shape one"></span><span class="hero-shape two"></span></div><div class="benefits"><span>${icon('check',17)} Сообщества со всей России</span><span>${icon('heart',17)} Магазины из сообществ VK</span><span>${icon('bell',17)} Заказы, доставка и дропы</span></div><section class="block" id="categories">${sectionHeader('Категории Маркета','Пять категорий для любых покупок')}<div class="category-row">${[['Гардероб','👕','#f2e2ea'],['Дом и дача','⌂','#e6e9da'],['Хобби и развлечения','✦','#eee5ff'],['Продукты питания','◉','#fff0d9'],['Красота и здоровье','✿','#f7e5e3']].map(([n,g,c])=>`<button class="category-tile" data-action="category" data-name="${n}"><span class="category-art" style="background:${c}">${g}</span><span>${n}</span>${icon('arrow',15)}</button>`).join('')}</div></section><section class="block" id="drops">${sectionHeader('Ближайшие дропы','Лимитированные подборки от магазинов','Все дропы','studio/drops')}<div class="drop-grid">${model.drops.slice(0,2).map(d=>dropCard(d)).join('')}</div></section><section class="block">${sectionHeader('Подборка на сегодня','Из разных городов России','Смотреть всё','search')}${productsGrid(model.products.slice(0,8))}</section><section class="block">${sectionHeader('Сообщества и магазины','Продавцы со всей России')}<div class="community-grid">${communities.map(s=>`<button class="community-tile" data-action="navigate" data-route="community/${s.id}">${sellerAvatar(s,'large')}<div><strong>${escapeHTML(s.name)}</strong><p>${escapeHTML(s.category)}</p><small>${s.followers} подписчиков</small></div>${icon('arrow',18)}</button>`).join('')}</div></section></div>`;
+const market = () => `<div class="market-page"><div class="hero"><div class="hero-text"><span class="hero-overline">ПОКУПКИ ИЗ СООБЩЕСТВ VK <span class="hero-star">✦</span></span><h1>Покупки из<br/><em>сообществ VK</em></h1><div class="hero-actions">${button(`Смотреть каталог ${icon('arrow',18)}`,'open-search','primary btn-lg')}${button(`Открыть дропы ${icon('fire',17)}`,'scroll-drops','light btn-lg')}</div></div><div class="hero-image" role="img" aria-label="Товары и коллекции магазинов ВКонтакте">${illustration(product('p1'))}<img src="${escapeHTML(product('p1')?.photo||photos.coffee)}" alt="Торт Речной закат"/></div><span class="hero-shape one"></span><span class="hero-shape two"></span></div><section class="block" id="categories">${sectionHeader('Категории Маркета','')}<div class="category-row">${[['Гардероб','👕','#f2e2ea'],['Дом и дача','⌂','#e6e9da'],['Хобби и развлечения','✦','#eee5ff'],['Продукты питания','◉','#fff0d9'],['Красота и здоровье','✿','#f7e5e3']].map(([n,g,c])=>`<button class="category-tile" data-action="category" data-name="${n}"><span class="category-art" style="background:${c}">${g}</span><span>${n}</span>${icon('arrow',15)}</button>`).join('')}</div></section><section class="block" id="drops">${sectionHeader('Ближайшие дропы','','Все дропы','studio/drops')}<div class="drop-grid">${model.drops.slice(0,2).map(d=>dropCard(d)).join('')}</div></section><section class="block">${sectionHeader('Подборка на сегодня','','Смотреть всё','search')}${productsGrid(model.products.slice(0,8))}</section><section class="block">${sectionHeader('Сообщества и магазины','')}<div class="community-grid">${communities.map(s=>`<button class="community-tile" data-action="navigate" data-route="community/${s.id}">${sellerAvatar(s,'large')}<div><strong>${escapeHTML(s.name)}</strong><p>${escapeHTML(s.category)}</p><small>${s.followers} подписчиков</small></div>${icon('arrow',18)}</button>`).join('')}</div></section></div>`;
 
   const filteredProducts = (filters = ui) => {
     let arr = model.products.filter(p =>
@@ -663,48 +661,128 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
   };
 
   const modal = () => {if(!ui.modal)return '';const close=`<button class="modal-close icon-btn" data-action="close-modal" aria-label="Закрыть">${icon('close',20)}</button>`;let inner='';if(ui.modal==='checkout'){inner=checkoutForm();} else if(ui.modal==='review'){inner=reviewForm();} else if(ui.modal==='return'){inner=returnForm();} else if(ui.modal==='issue'){inner=issueForm();} else if(ui.modal==='product'){const p=ui.editing?product(ui.editing):null;inner=`<div class="modal-head"><span class="eyebrow">КАТАЛОГ</span><h2>${p?'Редактировать товар':'Новый товар'}</h2><p>Заполните карточку товара сообщества «Речной Бисквит».</p></div><form data-form="product" class="form-stack"><label>Название<input required name="title" maxlength="80" value="${escapeHTML(p?.title||'')}" placeholder="Например, торт «Речной закат»"/></label><div class="form-row"><label>Цена, ₽<input required type="number" min="1" max="10000000" name="price" value="${p?.price||''}"/></label><label>Остаток, шт.<input required type="number" min="0" max="100000" name="stock" value="${p?.stock??1}"/></label></div><label>Категория<select name="category">${['Гардероб','Дом и дача','Хобби и развлечения','Продукты питания','Красота и здоровье'].map(c=>`<option ${p?.category===c?'selected':''}>${c}</option>`).join('')}</select></label><label>Ссылка на фото (HTTPS)<input name="photo" type="url" placeholder="https://..." value="${escapeHTML(p?.photo||'')}"/></label><label>Описание<textarea name="description" rows="3" required placeholder="Особенности товара">${escapeHTML(p?.description||'')}</textarea></label><button type="submit" class="btn primary btn-wide">${p?'Сохранить изменения':'Опубликовать товар'} ${icon('check',18)}</button></form>`;} else if(ui.modal==='drop'){const dt=new Date(dateIn(4));const local = new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,16);inner=`<div class="modal-head"><span class="eyebrow">ЛИМИТИРОВАННАЯ КОЛЛЕКЦИЯ</span><h2>Создать дроп</h2><p>Анонсируйте коллекцию до старта продаж.</p></div><form data-form="drop" class="form-stack"><label>Название дропа<input name="title" required maxlength="70" placeholder="РЕЧНОЙ ДРОП / 03"/></label><label>Краткое описание<input name="subtitle" required maxlength="100" placeholder="Новая коллекция"/></label><label>Дата и время начала<input type="datetime-local" name="startsAt" required value="${local}"/></label><label>Ограничение в одни руки<input type="number" name="limit" min="1" max="20" value="1" required/></label><fieldset><legend>Товары в коллекции</legend><div class="drop-items">${model.products.filter(p=>p.seller==='archive').map(p=>`<label><input type="checkbox" name="itemIds" value="${p.id}"/><span>${escapeHTML(p.title)}</span></label>`).join('')}</div></fieldset><button type="submit" class="btn primary btn-wide">Анонсировать дроп ${icon('arrow',18)}</button></form>`;} else if(ui.modal==='analytics'){inner=`<div class="modal-head"><span class="eyebrow">О ПОКАЗАТЕЛЯХ</span><h2>Как считаются метрики</h2></div><div class="info-list"><p><b>Просмотры</b> — показы шопсов, если источник предоставляет данные.</p><p><b>Открытия карточек</b> — переходы в товар из публикации с известным идентификатором.</p><p><b>Оформленные заказы</b> — заказы, источник которых удалось связать с публикацией. Просмотр сам по себе не доказывает влияние публикации.</p><p><b>Конверсия</b> = оформленные заказы / открытия карточек из известных шопсов.</p><p><b>Средний чек</b> = сумма оформленных, не отменённых заказов этого магазина / число таких заказов. При выборе категории в сумму входят только товары категории.</p><p><b>Комиссия сервиса (демо)</b> = 5% от стоимости товаров оплаченных и завершённых заказов. Доставка и возвращённые товары исключаются. Строка «Уплачено Маркету» учитывает только отдельно отмеченные тестовые выплаты, не списания денег.</p><p><b>Категории</b> — фильтрация исключительно товаров «Речной Бисквит». Отсутствие статистики по шопсу не равно отсутствию продаж.</p><p><b>Оплаченные</b> отображаются отдельно и только при надёжном доступе к статусу оплаты.</p><div class="notice">Показатели публикаций приведены для примера и не являются реальной отчётностью.</div></div>`;}return `<div class="modal-backdrop" data-action="close-backdrop"><div class="modal-dialog panel" role="dialog" aria-modal="true" aria-label="Окно действия">${close}${inner}</div></div>`;};
-  const onboardingSteps = [
-    {key:'shops',icon:'link',label:'Шопсы',title:'Товар прямо в публикации',description:'Сообщество публикует пост с прикреплённой карточкой товара. Покупатель открывает её из контента и оформляет заказ, не начиная поиск с нуля.',points:['Кнопка из поста ведёт в карточку товара','Переходы с известным источником попадают в аналитику','Покупка оформляется через единый сценарий Маркета'],route:'community/archive',action:'Посмотреть посты сообщества'},
-    {key:'drops',icon:'fire',label:'Дропы',title:'Коллекция с датой запуска',description:'Продавец собирает товары в ограниченную коллекцию, назначает дату, анонсирует её и получает интерес до старта продаж.',points:['Подписка на напоминание о запуске','Управление остатками и лимитами','Статусы «Скоро старт», «В продаже», «Завершён»'],route:'drop/d1',action:'Открыть пример дропа'},
-    {key:'delivery',icon:'truck',label:'Доставка',title:'Понятный путь от заказа до получения',description:'Покупатель выбирает доступный способ получения, видит стоимость и срок. Продавец управляет отправлением, а история доставки доступна из заказа.',points:['СДЭК, Яндекс Маркет, курьер или самовывоз — по доступности','Цена и срок зависят от товара и города отправки','Возврат или обращение создаются из истории заказа'],route:'product/p1',action:'Посмотреть карточку товара'},
-    {key:'analytics',icon:'chart',label:'Аналитика',title:'Что приносит магазину заказы',description:'В кабинете собраны продажи, средний чек, конверсии из публикаций, оценки товаров и расчёт комиссии сервиса.',points:['Периоды 7, 30 и 90 дней','Фильтр по категории и конкретному товару','Показатели шопсов отделены от оформленных заказов'],route:'studio/analytics',action:'Перейти в аналитику'},
-    {key:'community',icon:'user',label:'Сообщества',title:'Магазин остаётся частью VK',description:'Магазин связан с существующим сообществом. Покупатель видит продавца в карточке товара, может перейти в сообщество и открыть публикации с товарами.',points:['Одна витрина — товары и история сообщества','Шопсы связывают контент и карточки','Обычные сообщения VK остаются каналом связи'],route:'community/archive',action:'Открыть сообщество'}
+  // Two contextual tours use the real product controls rather than a separate slide deck.
+  const buyerTour = [
+    {route:'market',selector:'.sidebar [data-route="search"], .mobile-bottom [data-route="search"]',title:'Начните с каталога',text:'В поиске собраны товары разных магазинов и категорий. Нажмите выделенную кнопку.',mode:'click'},
+    {route:'search',selector:'.product-card .product-picture',title:'Откройте товар',text:'У товара есть описание, отзывы, срок доставки и информация о продавце.',mode:'click'},
+    {route:'product/p1',selector:'.seller-summary [data-route="community/archive"]',title:'Знакомьтесь с продавцом',text:'Из карточки можно перейти прямо в сообщество магазина VK.',mode:'click'},
+    {route:'community/archive',selector:'.shop-post [data-action="shop-open"]',title:'Шопс внутри публикации',text:'В посте сообщества прикреплён товар. Откройте его: переход сохранится в аналитике.',mode:'click'},
+    {route:'product/p1',selector:'.detail-buy [data-action="add-cart"]',title:'Положите товар в корзину',text:'Покупатель может оформить заказ непосредственно из шопса.',mode:'click'},
+    {route:'cart',selector:'.order-summary [data-action="checkout"]',fallback:'.empty-state [data-action="open-search"]',title:'Перейдите к оформлению',text:'Проверяйте состав и сумму заказа. В одной покупке — товары одного продавца.',mode:'click'},
+    {route:'cart',modal:'checkout',selector:'.delivery-choices .delivery-option input:not(:disabled)',title:'Выберите доставку',text:'Здесь доступны СДЭК, Яндекс Маркет, курьер или самовывоз — в зависимости от товара и города. Выберите вариант, затем нажмите «Далее».',mode:'next'},
+    {route:'market',selector:'#drops .drop-card',title:'Дропы с датой запуска',text:'В дропе товары собираются в лимитированную коллекцию. Откройте анонс.',mode:'click'},
+    {route:'drop/d1',selector:'.drop-info [data-action="remind"]',fallback:'.drop-info .live-box',title:'Следите за дропом',text:'До запуска можно включить напоминание; после старта — покупать доступные товары.',mode:'click'},
+    {route:'returns',selector:'.returns-guide [data-route="orders"]',title:'Возвраты — из заказа',text:'После покупки можно подать обращение по конкретному товару и отслеживать решение в профиле.',mode:'next'}
   ];
-  const onboardingResumeMarkup = () => {
-    if (!ui.onboardingPreview || ui.onboarding || route() === 'welcome') return '';
-    const step = onboardingSteps[ui.onboardingStep] || onboardingSteps[0];
-    return `<button type="button" class="onboarding-resume" data-action="onboarding-resume" aria-label="Вернуться к обучению: шаг ${ui.onboardingStep+1} из ${onboardingSteps.length}, ${escapeHTML(step.label)}"><span class="onboarding-resume-icon">${icon('back',18)}</span><span class="onboarding-resume-copy"><strong>Вернуться к обучению</strong><small>Шаг ${ui.onboardingStep+1} из ${onboardingSteps.length} · ${escapeHTML(step.label)}</small></span>${icon('chevron',16)}</button>`;
-  };
+  const sellerTour = [
+    {route:'studio/overview',selector:'.seller-context [data-route="community/archive"]',title:'Ваш магазин и сообщество',text:'Кабинет управляет магазином «Речной Бисквит». Нажмите, чтобы перейти в его сообщество.',mode:'click'},
+    {route:'community/archive',selector:'.shop-post [data-action="shop-open"]',title:'Как работают шопсы',text:'Публикация ведёт прямо к товару. Переходы и известные заказы учитываются в статистике.',mode:'click'},
+    {route:'studio/products',selector:'[data-action="new-product"]',fallback:'.table-panel',title:'Каталог магазина',text:'Здесь продавец добавляет товары, описания, цены и остатки. Нажмите «Добавить товар».',mode:'click'},
+    {route:'studio/products',modal:'product',selector:'form[data-form="product"] input[name="title"]',title:'Редактор товара',text:'Укажите название, цену, остаток, категорию и описание. Данные сохранятся после публикации — пока можно просто посмотреть форму.',mode:'next'},
+    {route:'studio/drops',selector:'[data-action="new-drop"]',fallback:'.seller-drop-list',title:'Создайте дроп',text:'Для лимитированной коллекции нажмите «Создать дроп».',mode:'click'},
+    {route:'studio/drops',modal:'drop',selector:'form[data-form="drop"] input[name="startsAt"]',title:'Дата и товары дропа',text:'Выберите дату, товары и лимиты на покупателя. Затем можно опубликовать анонс.',mode:'next'},
+    {route:'studio/orders',selector:'.sidebar [data-route="studio/returns"], .mobile-bottom [data-route="studio/returns"]',fallback:'.orders-list, .empty-state',title:'Заказы и доставка',text:'В заказе продавец подтверждает оплату, создаёт отправление и следит за его статусом. Нажмите «Возвраты».',mode:'click'},
+    {route:'studio/returns',selector:'.sidebar [data-route="studio/returns"], .mobile-bottom [data-route="studio/returns"]',fallback:'.seller-context',title:'Работа с возвратами',text:'Заявки покупателей поступают сюда. Решения и движение средств отображаются отдельно.',mode:'next'},
+    {route:'studio/analytics',selector:'[data-filter="analyticsCategory"]',fallback:'.analytics-toolbar',title:'Аналитика по категориям',text:'Выбирайте период, категорию или товар и сравнивайте заказы, шопсы и отзывы.',mode:'next'},
+    {route:'studio/analytics',selector:'.commission-section .commission-rate',fallback:'.analytics-page .stats-grid',title:'Комиссия Маркета',text:'Здесь видны ставка, начисленная комиссия и тестовые выплаты за выбранный период.',mode:'next'},
+    {route:'studio/settings',selector:'.logistics-settings input[name="handlingDays"]',title:'Настройки доставки',text:'Укажите способы получения и сроки подготовки. У покупателя будут показаны только доступные варианты.',mode:'next'}
+  ];
+  const guidedSteps = () => ui.onboardingRole==='seller' ? sellerTour : buyerTour;
+  const currentTourStep = () => guidedSteps()[Math.min(ui.onboardingStep,guidedSteps().length-1)];
   const onboardingMarkup = () => {
-    if(!ui.onboarding) return '';
-    const step=onboardingSteps[ui.onboardingStep]||onboardingSteps[0],i=ui.onboardingStep,total=onboardingSteps.length;
-    return `<div class="intro-backdrop" data-action="intro-backdrop"><section class="intro-dialog" role="dialog" aria-modal="true" aria-labelledby="intro-title" aria-describedby="intro-description"><div class="intro-top"><span class="intro-label">Знакомство с Маркетом</span><button type="button" class="intro-close" data-action="onboarding-close" aria-label="Закрыть знакомство">${icon('close',20)}</button></div><div class="intro-progress" role="progressbar" aria-label="Шаг знакомства" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${i+1}">${onboardingSteps.map((s,n)=>`<span class="${n<=i?'filled':''}"></span>`).join('')}</div><div class="intro-content" key="${step.key}"><div class="intro-icon">${icon(step.icon,29)}</div><p class="intro-step">${i+1} из ${total} · ${step.label}</p><h2 id="intro-title">${step.title}</h2><p id="intro-description">${step.description}</p><ul class="intro-points">${step.points.map(p=>`<li>${icon('check',17)} <span>${p}</span></li>`).join('')}</ul><button type="button" class="intro-example" data-action="onboarding-example" data-route="${step.route}">${step.action} ${icon('arrow',16)}</button></div><div class="intro-bottom"><button type="button" class="intro-text-button" data-action="onboarding-close">Пропустить</button><div class="intro-navigation">${i>0?`<button class="btn outline" data-action="onboarding-prev" type="button">Назад</button>`:''}<button class="btn primary" data-action="${i===total-1?'onboarding-close':'onboarding-next'}" type="button">${i===total-1?'Начать работу':'Далее'} ${icon(i===total-1?'check':'arrow',17)}</button></div></div><p class="intro-caveat">Примеры заказов, тарифов и выплат в этой версии учебные; реальные списания и отправления не выполняются.</p></section></div>`;
+    if(!ui.onboarding)return '';
+    const step=currentTourStep(),last=ui.onboardingStep===guidedSteps().length-1;
+    return `<div class="guided-tour" aria-label="Интерактивное знакомство с Маркетом"><div class="guided-highlight" aria-hidden="true"></div><section class="guided-tip" role="region" aria-label="Подсказка: ${escapeHTML(step.title)}"><div class="guided-top"><span>Шаг ${ui.onboardingStep+1} из ${guidedSteps().length}</span><button type="button" data-action="onboarding-close" aria-label="Закрыть подсказки">${icon('close',17)}</button></div><h2>${escapeHTML(step.title)}</h2><p>${escapeHTML(step.text)}</p><div class="guided-actions"><button type="button" class="guided-skip" data-action="onboarding-close">Пропустить</button><div class="guided-steps-nav">${ui.onboardingStep?`<button type="button" class="guided-back" data-action="onboarding-prev">Назад</button>`:''}<button type="button" class="guided-next" data-action="onboarding-next">${last?'Завершить':step.mode==='click'?'Пропустить шаг':'Далее'} ${icon('arrow',15)}</button></div></div></section></div>`;
   };
+  const onboardingResumeMarkup = () => ui.onboardingPreview&&!ui.onboarding&&route()!=='welcome'
+    ? `<button class="guided-resume" data-action="onboarding-resume">${icon('info',17)} Продолжить знакомство · шаг ${ui.onboardingStep+1}</button>` : '';
+  let tourRAF=0;
+  const saveOnboardingPreview = () => {
+    try {sessionStorage.setItem(ONBOARDING_RESUME_KEY,JSON.stringify({role:ui.onboardingRole,step:ui.onboardingStep}));}catch{}
+  };
+  const onboardSeen = (role) => {try{return localStorage.getItem(`${ONBOARDING_KEY}-${role}`)==='seen';}catch{return false;}};
+  const positionTour = () => {
+    if(!ui.onboarding)return;
+    const shell=document.querySelector('.guided-tour');
+    if(!shell)return;
+    const step=currentTourStep();
+    const candidates=[...document.querySelectorAll(step.selector)].filter(node=>{
+      const r=node.getBoundingClientRect(); const cs=getComputedStyle(node);
+      return r.width>8&&r.height>8&&cs.display!=='none'&&cs.visibility!=='hidden'&&node.getClientRects().length;
+    });
+    let target=candidates.find(el=>{const r=el.getBoundingClientRect();return r.bottom>55&&r.top<innerHeight-50&&r.right>0&&r.left<innerWidth;})||candidates[0];
+    if(!target&&step.fallback)target=document.querySelector(step.fallback);
+    const highlight=shell.querySelector('.guided-highlight'),tip=shell.querySelector('.guided-tip');
+    if(!target){highlight.style.display='none';tip.style.left=`${Math.max(12,(innerWidth-tip.offsetWidth)/2)}px`;tip.style.top=`${Math.max(85,(innerHeight-tip.offsetHeight)/2)}px`;return;}
+    const r=target.getBoundingClientRect();
+    if((r.top<68||r.bottom>innerHeight-74)&&r.height<innerHeight*.7){
+      target.scrollIntoView({block:'center',behavior:'instant'});
+      cancelAnimationFrame(tourRAF);tourRAF=requestAnimationFrame(()=>{
+        const rr=target.getBoundingClientRect();if(Math.abs(rr.top-r.top)>2)positionTour();else placeTourAt(rr);
+      });
+      return;
+    }
+    placeTourAt(r);
+    function placeTourAt(a){
+      const pad=5;
+      highlight.style.display='block';
+      Object.assign(highlight.style,{left:`${Math.max(4,a.left-pad)}px`,top:`${Math.max(4,a.top-pad)}px`,width:`${Math.min(innerWidth-8,a.width+2*pad)}px`,height:`${a.height+2*pad}px`});
+      const width=tip.offsetWidth||325,height=tip.offsetHeight||190;
+      const leftBound=12,maxLeft=Math.max(12,innerWidth-width-12);
+      let x,y;
+      if(innerWidth>800 && a.right+width+18<innerWidth){x=a.right+18;y=a.top+a.height/2-height/2;}
+      else if(innerWidth>800 && a.left-width-18>12){x=a.left-width-18;y=a.top+a.height/2-height/2;}
+      else if(a.bottom+height+16<innerHeight-65){x=a.left+a.width/2-width/2;y=a.bottom+16;}
+      else{x=a.left+a.width/2-width/2;y=a.top-height-16;}
+      x=Math.max(leftBound,Math.min(maxLeft,x));
+      y=Math.max(72,Math.min(Math.max(72,innerHeight-height-75),y));
+      tip.style.left=`${Math.round(x)}px`;tip.style.top=`${Math.round(y)}px`;
+    }
+  };
+  const scheduleTourPosition = () => {if(ui.onboarding){cancelAnimationFrame(tourRAF);tourRAF=requestAnimationFrame(positionTour);}};
   const refreshOnboarding = () => {
     const root=document.getElementById('onboarding-root');
     if(!root)return;
     root.innerHTML=onboardingMarkup();
     const resumeRoot=document.getElementById('onboarding-resume-root');
-    if(resumeRoot) resumeRoot.innerHTML=onboardingResumeMarkup();
+    if(resumeRoot)resumeRoot.innerHTML=onboardingResumeMarkup();
     document.body.classList.toggle('onboarding-active',!!ui.onboarding);
-    if(ui.onboarding)root.querySelector('.intro-dialog .intro-close')?.focus({preventScroll:true});
+    scheduleTourPosition();
   };
-  const saveOnboardingPreview = () => {try{sessionStorage.setItem(ONBOARDING_RESUME_KEY,String(ui.onboardingStep));}catch{}};
-  const onboardSeen = () => {try{return localStorage.getItem(ONBOARDING_KEY)==='seen';}catch{return false;}};
   const closeOnboarding = () => {
-    ui.onboarding=false;
-    ui.onboardingPreview=false;
-    try{localStorage.setItem(ONBOARDING_KEY,'seen');sessionStorage.removeItem(ONBOARDING_RESUME_KEY);}catch{}
-    refreshOnboarding();
+    ui.onboarding=false;ui.onboardingPreview=false;ui.modal=null;
+    try{localStorage.setItem(`${ONBOARDING_KEY}-${ui.onboardingRole}`,'seen');sessionStorage.removeItem(ONBOARDING_RESUME_KEY);}catch{}
+    render();
+  };
+  const tourGoStep = (index) => {
+    if(index>=guidedSteps().length){closeOnboarding();return;}
+    ui.onboardingStep=Math.max(0,index);ui.onboarding=true;ui.onboardingPreview=false;
+    const step=currentTourStep();
+    saveOnboardingPreview();
+    ui.modal=null;
+    const targetRoute=step.route;
+    const modalStep=step.modal && (step.modal!=='checkout'||model.cart.length);
+    if(targetRoute&&route()!==targetRoute){
+      go(targetRoute);
+      if(modalStep){ui.modal=step.modal;render();}
+    }else if(modalStep){ui.modal=step.modal;render();}
+    else render();
   };
   const resumeOnboarding = () => {
-    ui.onboardingPreview=false;
-    ui.onboarding=true;
-    ui.sidebar=false;
-    render();
-    requestAnimationFrame(()=>document.querySelector('.intro-close')?.focus({preventScroll:true}));
+    ui.onboarding=true;ui.onboardingPreview=false;ui.sidebar=false;
+    tourGoStep(ui.onboardingStep);
   };
-  const render = () => {const isWelcome=route()==='welcome';document.documentElement.dataset.theme=model.theme;document.body.classList.toggle('filters-visible',ui.filtersOpen);document.body.classList.toggle('welcome-mode',isWelcome);document.body.classList.toggle('onboarding-active',!!ui.onboarding);document.title=studio()?'Речной Бисквит · VK Маркет':'VK Маркет';document.getElementById('app').innerHTML = `${isWelcome?'':head()}<div class="shell ${isWelcome?'welcome-shell':''}">${isWelcome?'':sidebar()}<main id="main" class="main-content"><div class="content-wrap">${content()}</div></main></div>${isWelcome?'':filterDrawer()}${modal()}${ui.toast?`<div class="toast" role="status">${icon('check',19)} ${escapeHTML(ui.toast)}</div>`:''}${isWelcome?'':`<nav class="mobile-bottom">${(studio()?sellerNav.slice(0,5):topNav).map(([r,g,n])=>`<button class="${route()===r?'active':''}" data-action="navigate" data-route="${r}">${icon(g,21)}<span>${n}</span></button>`).join('')}</nav>`}<div id="onboarding-root">${onboardingMarkup()}</div><div id="onboarding-resume-root">${onboardingResumeMarkup()}</div>`;};
+  const beginTour = (role) => {
+    ui.onboardingRole=role;
+    const wasPreview=ui.onboardingPreview&&savedTour?.role===role;
+    if(!wasPreview)ui.onboardingStep=0;
+    ui.onboarding=!onboardSeen(role)||wasPreview;
+    ui.onboardingPreview=false;
+    if(ui.onboarding){saveOnboardingPreview();tourGoStep(ui.onboardingStep);}
+    else go(role==='seller'?'studio/overview':'market');
+  };
+
+  const render = () => {const isWelcome=route()==='welcome';document.documentElement.dataset.theme=model.theme;document.body.classList.toggle('filters-visible',ui.filtersOpen);document.body.classList.toggle('welcome-mode',isWelcome);document.body.classList.toggle('onboarding-active',!!ui.onboarding);document.title=studio()?'Речной Бисквит · VK Маркет':'VK Маркет';document.getElementById('app').innerHTML = `${isWelcome?'':head()}<div class="shell ${isWelcome?'welcome-shell':''}">${isWelcome?'':sidebar()}<main id="main" class="main-content"><div class="content-wrap">${content()}</div></main></div>${isWelcome?'':filterDrawer()}${modal()}${ui.toast?`<div class="toast" role="status">${icon('check',19)} ${escapeHTML(ui.toast)}</div>`:''}${isWelcome?'':`<nav class="mobile-bottom">${(studio()?sellerNav.slice(0,5):topNav).map(([r,g,n])=>`<button class="${route()===r?'active':''}" data-action="navigate" data-route="${r}">${icon(g,21)}<span>${n}</span></button>`).join('')}</nav>`}<div id="onboarding-root">${onboardingMarkup()}</div><div id="onboarding-resume-root">${onboardingResumeMarkup()}</div>`;scheduleTourPosition();};
   const notify = (text) => {ui.toast=text;render();clearTimeout(notify.timer);notify.timer=setTimeout(()=>{ui.toast='';const node=document.querySelector('.toast');if(node)node.remove();},3200);};
   const countdown = (date) => {const sec=Math.max(0,Math.floor((new Date(date).getTime()-Date.now())/1000));const days=Math.floor(sec/86400),hours=Math.floor((sec%86400)/3600),mins=Math.floor((sec%3600)/60);return `${String(days).padStart(2,'0')} дн : ${String(hours).padStart(2,'0')} ч : ${String(mins).padStart(2,'0')} мин`;};
   const addToCart = (id) => {const p=product(id);if(!p||p.stock<=0)return notify('Товар закончился');const belongsToDrop=model.drops.find(d=>d.itemIds.includes(id)&&d.seller===p.seller);if(model.cart.length&&product(model.cart[0].id)?.seller!==p.seller)return notify('В одном заказе можно оформить товары только одного продавца');const item=model.cart.find(x=>x.id===id);if(item){if(item.qty>=p.stock)return notify('Больше нет в наличии');if(belongsToDrop?.status==='live'&&item.qty>=belongsToDrop.limit)return notify('Достигнут лимит дропа на покупателя');item.qty++;}else model.cart.push({id,qty:1});if(ui.currentSource?.productId===id){const item=model.cart.find(x=>x.id===id);if(item)item.sourcePostId=ui.currentSource.postId;ui.currentSource=null;}persist();notify('Товар добавлен в корзину');};
@@ -820,30 +898,18 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
     }
     case 'navigate':{const r=el.dataset.route;if(!r.startsWith('product/'))ui.currentSource=null;go(r);break;}
     case 'choose-role':{
-      const resume = ui.onboardingPreview;
-      ui.onboarding=resume || !onboardSeen();
-      if(!resume) ui.onboardingStep=0;
-      ui.onboardingPreview=false;
-      go(el.dataset.route);
-      if(ui.onboarding)requestAnimationFrame(()=>document.querySelector('.intro-close')?.focus({preventScroll:true}));
+      const role=el.dataset.route.startsWith('studio/')?'seller':'buyer';
+      beginTour(role);
       break;
     }
     case 'open-onboarding':
-      if(!ui.onboardingPreview)ui.onboardingStep=0;
-      resumeOnboarding();
-      break;
+      ui.onboardingRole=studio()?'seller':'buyer';
+      ui.onboardingStep=0;
+      resumeOnboarding();break;
     case 'onboarding-resume':resumeOnboarding();break;
-    case 'onboarding-next':ui.onboardingStep=Math.min(onboardingSteps.length-1,ui.onboardingStep+1);saveOnboardingPreview();refreshOnboarding();break;
-    case 'onboarding-prev':ui.onboardingStep=Math.max(0,ui.onboardingStep-1);saveOnboardingPreview();refreshOnboarding();break;
+    case 'onboarding-next':tourGoStep(ui.onboardingStep+1);break;
+    case 'onboarding-prev':tourGoStep(ui.onboardingStep-1);break;
     case 'onboarding-close':closeOnboarding();break;
-    case 'intro-backdrop':if(el===originalTarget)closeOnboarding();break;
-    case 'onboarding-example':{
-      ui.onboarding=false;
-      ui.onboardingPreview=true;
-      saveOnboardingPreview();
-      go(el.dataset.route);
-      break;
-    }
 
     case 'open-search':go('search');break;
     case 'switch-buyer':go('market');break;
@@ -896,7 +962,16 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
     case 'connect-community':model.connected=!model.connected;persist();notify(model.connected?'Сообщество подключено (демо)':'Сообщество отключено');break;
     case 'reset':if(window.confirm('Удалить сохранённые данные Маркета и начать заново?')){model=defaultState();ui={category:'Все',query:'',sort:'popular',minPrice:'',maxPrice:'',inStock:false,filtersOpen:false,filterDraft:null,period:30,metric:'opens',analyticsCategory:'Все',analyticsProduct:'all',modal:null,editing:null,toast:'',sidebar:false,checkoutDraft:null,currentOrder:null,currentProduct:null,currentReturn:null,currentSource:null};persist();go('welcome');notify('Данные Маркета восстановлены');}break;
   }};
-  document.addEventListener('click',(e)=>{const target=e.target.closest('[data-action]');if(target && !target.disabled){if(['close-backdrop','close-filter-backdrop'].includes(target.dataset.action) && target!==e.target)return;e.preventDefault();action(target.dataset.action,target,e.target);}});
+  document.addEventListener('click',(e)=>{
+    const target=e.target.closest('[data-action]');
+    if(!target||target.disabled)return;
+    if(['close-backdrop','close-filter-backdrop'].includes(target.dataset.action)&&target!==e.target)return;
+    const step=ui.onboarding?currentTourStep():null;
+    const chosen=step?.mode==='click' && [...document.querySelectorAll(step.selector)].some(node=>node===target||node.contains(target));
+    e.preventDefault();
+    action(target.dataset.action,target,e.target);
+    if(chosen && ui.onboarding && currentTourStep()===step)tourGoStep(ui.onboardingStep+1);
+  });
   const updateFilterDraft = (el) => {
     if(!ui.filterDraft) return;
     ui.filterDraft[el.dataset.draftFilter] = el.type==='checkbox' ? el.checked : el.value;
@@ -996,13 +1071,8 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
   window.addEventListener('keydown',(e)=>{
     if(ui.onboarding){
       if(e.key==='Escape'){e.preventDefault();closeOnboarding();return;}
-      if(e.key==='ArrowRight' || e.key==='ArrowLeft'){
-        e.preventDefault();ui.onboardingStep=Math.max(0,Math.min(onboardingSteps.length-1,ui.onboardingStep+(e.key==='ArrowRight'?1:-1)));refreshOnboarding();return;
-      }
-      if(e.key==='Tab'){
-        const fs=[...document.querySelectorAll('#onboarding-root button:not([disabled])')];
-        if(fs.length){const first=fs[0],last=fs.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
-        return;
+      if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+        e.preventDefault();tourGoStep(ui.onboardingStep+(e.key==='ArrowRight'?1:-1));return;
       }
     }
     if(e.key==='Escape'&&ui.filtersOpen){ui.filtersOpen=false;ui.filterDraft=null;render();requestAnimationFrame(()=>document.querySelector('.filter-open-btn')?.focus());return;}
@@ -1014,6 +1084,8 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
       else if(!e.shiftKey&&document.activeElement===focusables.at(-1)){e.preventDefault();focusables[0].focus();}
     }
   });
+  window.addEventListener('resize',scheduleTourPosition);
+  window.addEventListener('scroll',scheduleTourPosition,true);
   setInterval(()=>document.querySelectorAll('[data-countdown]').forEach(el=>{const d=drop(el.dataset.countdown);if(d)el.textContent=countdown(d.startsAt);}),1000);
   render();
 })();

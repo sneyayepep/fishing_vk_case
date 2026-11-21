@@ -884,3 +884,30 @@ body.onboarding-active {overflow:hidden;}
   .onboarding-resume-copy strong {font-size:12px;}
   .onboarding-resume-copy small {font-size:10px;}
 }
+
+/* Guided, in-context tour. The highlighted real control stays clickable. */
+body.onboarding-active{overflow:auto}
+.guided-tour{position:fixed;inset:0;z-index:120;pointer-events:none}
+.guided-highlight{position:fixed;pointer-events:none;border:2px solid #2688eb;border-radius:11px;box-shadow:0 0 0 9999px rgba(14,29,50,.51),0 0 0 5px rgba(38,136,235,.17);transition:left .13s ease,top .13s ease,width .13s ease,height .13s ease;z-index:1}
+.guided-tip{position:fixed;z-index:2;pointer-events:auto;width:min(328px,calc(100vw - 24px));max-height:calc(100dvh - 155px);overflow:auto;background:#fff;color:#1a1d24;border:1px solid #e4eaf3;border-radius:13px;padding:17px 18px 14px;box-shadow:0 18px 42px rgba(9,30,65,.22);text-align:left}
+.guided-top{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#2688eb;font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:.04em}
+.guided-top button{display:grid;place-items:center;width:28px;height:28px;flex-shrink:0;border-radius:7px;color:#78899b}
+.guided-top button:hover{background:#f1f5fa;color:#272f39}
+.guided-tip h2{font-size:19px;line-height:1.22;letter-spacing:-.035em;margin:8px 0 8px;color:#22252a}
+.guided-tip p{margin:0 0 17px;color:#637184;font-size:13px;line-height:1.5}
+.guided-actions{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}
+.guided-steps-nav{display:flex;align-items:center;gap:7px}
+.guided-skip{font-size:12px;color:#7e8998;padding:8px 0}
+.guided-skip:hover{color:#2688eb}
+.guided-back,.guided-next{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:8px 11px;font-size:12px;font-weight:650;border-radius:8px;white-space:nowrap}
+.guided-back{color:#536278;background:#f1f4f8}
+.guided-next{color:#fff;background:#2688eb}
+.guided-back:hover{background:#e9eef5}
+.guided-next:hover{background:#1174d2}
+.guided-resume{position:fixed;z-index:101;right:22px;bottom:23px;display:inline-flex;align-items:center;gap:9px;border-radius:10px;padding:12px 15px;background:#fff;color:#2688eb;box-shadow:0 9px 25px rgba(26,43,70,.17);border:1px solid #dae5f1;font-weight:650;font-size:13px}
+.guided-resume:hover{background:#f3f8ff}
+.market-page .hero-text{justify-content:center}
+.market-page .hero-text h1{margin-bottom:22px}
+.market-page .hero-actions{margin-top:0}
+@media(max-width:780px){.guided-tip{max-height:calc(100dvh - 120px);padding:14px 15px 13px}.guided-tip h2{font-size:17px}.guided-tip p{font-size:12px;margin-bottom:13px}.guided-resume{right:12px;bottom:calc(73px + env(safe-area-inset-bottom, 0px));font-size:12px}}
+@media(prefers-reduced-motion:reduce){.guided-highlight{transition:none}}
