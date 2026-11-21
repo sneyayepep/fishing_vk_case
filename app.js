@@ -233,7 +233,7 @@
     model.deliveryProvidersVersion='rybinsk-providers-v2';
     try{localStorage.setItem(STORAGE,JSON.stringify(model));}catch{}
   }
-  const ONBOARDING_KEY = 'vk-market-guided-tour-v2';
+  const ONBOARDING_KEY = 'vk-market-guided-tour-v3';
   const ONBOARDING_RESUME_KEY = 'vk-market-guided-tour-session-v2';
   const savedTour = (() => {
     try {
@@ -434,6 +434,7 @@
     bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9ZM10 21h4"/>',
     moon:'<path d="M20 15.5A8 8 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z"/>',
     sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.5 1.5m11.2 11.2 1.5 1.5M2 12h2m16 0h2M4.9 19.1l1.5-1.5M17.6 6.4l1.5-1.5"/>',
+    'mouse-pointer-click':'<path d="M4 3v15l4-4 3 7 3-1-3-7 6-1z"/><path d="m15 3 1-2m4 6 3-1m-7 1 3-3"/>',
     eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
     edit:'<path d="M12 20h9M4 16l11-11 4 4L8 20H4z"/>',
     external:'<path d="M12 4h8v8M20 4l-9 9"/><path d="M20 14v6H4V4h6"/>',
@@ -664,9 +665,9 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
   // Two contextual tours use the real product controls rather than a separate slide deck.
   const buyerTour = [
     {route:'market',selector:'.sidebar [data-route="search"], .mobile-bottom [data-route="search"]',title:'Начните с каталога',text:'В поиске собраны товары разных магазинов и категорий. Нажмите выделенную кнопку.',mode:'click'},
-    {route:'search',selector:'.product-card .product-picture',title:'Откройте товар',text:'У товара есть описание, отзывы, срок доставки и информация о продавце.',mode:'click'},
+    {route:'search',selector:'.product-card .product-picture[data-route="product/p1"]',title:'Откройте товар',text:'У товара есть описание, отзывы, срок доставки и информация о продавце.',mode:'click'},
     {route:'product/p1',selector:'.seller-summary [data-route="community/archive"]',title:'Знакомьтесь с продавцом',text:'Из карточки можно перейти прямо в сообщество магазина VK.',mode:'click'},
-    {route:'community/archive',selector:'.shop-post [data-action="shop-open"]',title:'Шопс внутри публикации',text:'В посте сообщества прикреплён товар. Откройте его: переход сохранится в аналитике.',mode:'click'},
+    {route:'community/archive',selector:'.shop-post [data-action="shop-open"][data-id="p1"]',title:'Шопс внутри публикации',text:'В посте сообщества прикреплён товар. Откройте его: переход сохранится в аналитике.',mode:'click'},
     {route:'product/p1',selector:'.detail-buy [data-action="add-cart"]',title:'Положите товар в корзину',text:'Покупатель может оформить заказ непосредственно из шопса.',mode:'click'},
     {route:'cart',selector:'.order-summary [data-action="checkout"]',fallback:'.empty-state [data-action="open-search"]',title:'Перейдите к оформлению',text:'Проверяйте состав и сумму заказа. В одной покупке — товары одного продавца.',mode:'click'},
     {route:'cart',modal:'checkout',selector:'.delivery-choices .delivery-option input:not(:disabled)',title:'Выберите доставку',text:'Здесь доступны СДЭК, Яндекс Маркет, курьер или самовывоз — в зависимости от товара и города. Выберите вариант, затем нажмите «Далее».',mode:'next'},
@@ -676,7 +677,7 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
   ];
   const sellerTour = [
     {route:'studio/overview',selector:'.seller-context [data-route="community/archive"]',title:'Ваш магазин и сообщество',text:'Кабинет управляет магазином «Речной Бисквит». Нажмите, чтобы перейти в его сообщество.',mode:'click'},
-    {route:'community/archive',selector:'.shop-post [data-action="shop-open"]',title:'Как работают шопсы',text:'Публикация ведёт прямо к товару. Переходы и известные заказы учитываются в статистике.',mode:'click'},
+    {route:'community/archive',selector:'.shop-post [data-action="shop-open"][data-id="p1"]',title:'Как работают шопсы',text:'Публикация ведёт прямо к товару. Переходы и известные заказы учитываются в статистике.',mode:'click'},
     {route:'studio/products',selector:'[data-action="new-product"]',fallback:'.table-panel',title:'Каталог магазина',text:'Здесь продавец добавляет товары, описания, цены и остатки. Нажмите «Добавить товар».',mode:'click'},
     {route:'studio/products',modal:'product',selector:'form[data-form="product"] input[name="title"]',title:'Редактор товара',text:'Укажите название, цену, остаток, категорию и описание. Данные сохранятся после публикации — пока можно просто посмотреть форму.',mode:'next'},
     {route:'studio/drops',selector:'[data-action="new-drop"]',fallback:'.seller-drop-list',title:'Создайте дроп',text:'Для лимитированной коллекции нажмите «Создать дроп».',mode:'click'},
@@ -692,7 +693,7 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
   const onboardingMarkup = () => {
     if(!ui.onboarding)return '';
     const step=currentTourStep(),last=ui.onboardingStep===guidedSteps().length-1;
-    return `<div class="guided-tour" aria-label="Интерактивное знакомство с Маркетом"><div class="guided-highlight" aria-hidden="true"></div><section class="guided-tip" role="region" aria-label="Подсказка: ${escapeHTML(step.title)}"><div class="guided-top"><span>Шаг ${ui.onboardingStep+1} из ${guidedSteps().length}</span><button type="button" data-action="onboarding-close" aria-label="Закрыть подсказки">${icon('close',17)}</button></div><h2>${escapeHTML(step.title)}</h2><p>${escapeHTML(step.text)}</p><div class="guided-actions"><button type="button" class="guided-skip" data-action="onboarding-close">Пропустить</button><div class="guided-steps-nav">${ui.onboardingStep?`<button type="button" class="guided-back" data-action="onboarding-prev">Назад</button>`:''}<button type="button" class="guided-next" data-action="onboarding-next">${last?'Завершить':step.mode==='click'?'Пропустить шаг':'Далее'} ${icon('arrow',15)}</button></div></div></section></div>`;
+    return `<div class="guided-tour" aria-label="Интерактивное знакомство с Маркетом"><div class="guided-highlight" aria-hidden="true"></div><svg class="guided-pointer" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><marker id="guided-arrowhead" markerWidth="11" markerHeight="11" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="none" stroke="#2688eb" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" /></marker></defs><path class="guided-pointer-halo" /><path class="guided-pointer-line" marker-end="url(#guided-arrowhead)" /></svg><div class="guided-target-badge" aria-hidden="true">${step.mode==='click'?'Нажмите сюда':'Посмотрите здесь'}</div><section class="guided-tip" role="region" aria-label="Подсказка: ${escapeHTML(step.title)}"><div class="guided-top"><span>Шаг ${ui.onboardingStep+1} из ${guidedSteps().length}</span><button type="button" data-action="onboarding-close" aria-label="Закрыть подсказки">${icon('close',17)}</button></div><h2>${escapeHTML(step.title)}</h2><p>${escapeHTML(step.text)}</p><div class="guided-instruction">${icon(step.mode==='click'?'mouse-pointer-click':'eye',17)}<span>${step.mode==='click'?'Нажмите на выделенную кнопку — или «Далее», чтобы выполнить действие.':'Посмотрите, как устроен экран, и нажмите «Далее».'}</span></div><div class="guided-actions"><button type="button" class="guided-skip" data-action="onboarding-close">Пропустить обучение</button><div class="guided-steps-nav">${ui.onboardingStep?`<button type="button" class="guided-back" data-action="onboarding-prev">Назад</button>`:''}<button type="button" class="guided-next" data-action="onboarding-next">${last?'Завершить':'Далее'} ${icon('arrow',15)}</button></div></div></section></div>`;
   };
   const onboardingResumeMarkup = () => ui.onboardingPreview&&!ui.onboarding&&route()!=='welcome'
     ? `<button class="guided-resume" data-action="onboarding-resume">${icon('info',17)} Продолжить знакомство · шаг ${ui.onboardingStep+1}</button>` : '';
@@ -701,19 +702,26 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
     try {sessionStorage.setItem(ONBOARDING_RESUME_KEY,JSON.stringify({role:ui.onboardingRole,step:ui.onboardingStep}));}catch{}
   };
   const onboardSeen = (role) => {try{return localStorage.getItem(`${ONBOARDING_KEY}-${role}`)==='seen';}catch{return false;}};
+  const tourTarget = (step=currentTourStep()) => {
+    if(!step?.selector)return null;
+    const visible = (node) => {
+      if(!node)return false;
+      const r=node.getBoundingClientRect(),cs=getComputedStyle(node);
+      return r.width>8&&r.height>8&&cs.display!=='none'&&cs.visibility!=='hidden'&&node.getClientRects().length>0;
+    };
+    const choices=[...document.querySelectorAll(step.selector)].filter(visible);
+    const onScreen=el=>{const r=el.getBoundingClientRect();return r.bottom>55&&r.top<innerHeight-50&&r.right>0&&r.left<innerWidth;};
+    return choices.find(onScreen)||choices[0]||((step.fallback&&[...document.querySelectorAll(step.fallback)].find(visible))||null);
+  };
   const positionTour = () => {
     if(!ui.onboarding)return;
     const shell=document.querySelector('.guided-tour');
     if(!shell)return;
-    const step=currentTourStep();
-    const candidates=[...document.querySelectorAll(step.selector)].filter(node=>{
-      const r=node.getBoundingClientRect(); const cs=getComputedStyle(node);
-      return r.width>8&&r.height>8&&cs.display!=='none'&&cs.visibility!=='hidden'&&node.getClientRects().length;
-    });
-    let target=candidates.find(el=>{const r=el.getBoundingClientRect();return r.bottom>55&&r.top<innerHeight-50&&r.right>0&&r.left<innerWidth;})||candidates[0];
-    if(!target&&step.fallback)target=document.querySelector(step.fallback);
+    const step=currentTourStep(),target=tourTarget(step);
     const highlight=shell.querySelector('.guided-highlight'),tip=shell.querySelector('.guided-tip');
-    if(!target){highlight.style.display='none';tip.style.left=`${Math.max(12,(innerWidth-tip.offsetWidth)/2)}px`;tip.style.top=`${Math.max(85,(innerHeight-tip.offsetHeight)/2)}px`;return;}
+    const arrow=shell.querySelector('.guided-pointer'),badge=shell.querySelector('.guided-target-badge');
+    if(!target){highlight.style.display='none';arrow.style.display='none';badge.style.display='none';tip.style.left=`${Math.max(12,(innerWidth-tip.offsetWidth)/2)}px`;tip.style.top=`${Math.max(85,(innerHeight-tip.offsetHeight)/2)}px`;return;}
+    arrow.style.display='block';badge.style.display='flex';
     const r=target.getBoundingClientRect();
     if((r.top<68||r.bottom>innerHeight-74)&&r.height<innerHeight*.7){
       target.scrollIntoView({block:'center',behavior:'instant'});
@@ -737,6 +745,38 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
       x=Math.max(leftBound,Math.min(maxLeft,x));
       y=Math.max(72,Math.min(Math.max(72,innerHeight-height-75),y));
       tip.style.left=`${Math.round(x)}px`;tip.style.top=`${Math.round(y)}px`;
+      // Draw the pointer from the tooltip to the real control, not to the next screen.
+      const tipRect={left:x,top:y,width,height};
+      const center=rect=>({x:rect.left+rect.width/2,y:rect.top+rect.height/2});
+      const intersect=(rect,point)=>{
+        const c=center(rect),dx=point.x-c.x,dy=point.y-c.y;
+        const t=Math.min((rect.width/2+2)/Math.max(.01,Math.abs(dx)),(rect.height/2+2)/Math.max(.01,Math.abs(dy)));
+        return {x:c.x+dx*t,y:c.y+dy*t};
+      };
+      const start=intersect(tipRect,center(a)),end=intersect(a,center(tipRect));
+      const distance=Math.hypot(end.x-start.x,end.y-start.y);
+      arrow.setAttribute('viewBox',`0 0 ${innerWidth} ${innerHeight}`);
+      const curve=Math.min(26,distance*.12);
+      const d=`M ${start.x.toFixed(1)} ${start.y.toFixed(1)} Q ${((start.x+end.x)/2).toFixed(1)} ${((start.y+end.y)/2-curve).toFixed(1)} ${end.x.toFixed(1)} ${end.y.toFixed(1)}`;
+      shell.querySelectorAll('.guided-pointer-halo,.guided-pointer-line').forEach(p=>p.setAttribute('d',d));
+      // Keep the explicit instruction close to the target, including on mobile.
+      const labelW=step.mode==='click'?112:130;
+      let bx=Math.min(innerWidth-labelW-9,Math.max(9,a.left+a.width/2-labelW/2));
+      let by=a.top-37;
+      if(by<58)by=a.bottom+13;
+      if(by>innerHeight-38)by=Math.max(62,a.top-37);
+      const overlaps=(x1,y1,w1,h1,x2,y2,w2,h2)=>x1<x2+w2&&x1+w1>x2&&y1<y2+h2&&y1+h1>y2;
+      if(overlaps(bx,by,labelW,27,x,y,width,height)){
+        const rightX=a.right+9;
+        const leftX=a.left-labelW-9;
+        if(rightX+labelW<=innerWidth-8)bx=rightX;
+        else if(leftX>=8)bx=leftX;
+        else bx=Math.max(8,Math.min(innerWidth-labelW-8,a.left));
+        by=Math.max(58,Math.min(innerHeight-35,a.top+a.height/2-14));
+      }
+      badge.style.left=`${Math.round(bx)}px`;
+      badge.style.top=`${Math.round(by)}px`;
+      badge.classList.toggle('guided-target-badge-view',step.mode!=='click');
     }
   };
   const scheduleTourPosition = () => {if(ui.onboarding){cancelAnimationFrame(tourRAF);tourRAF=requestAnimationFrame(positionTour);}};
@@ -774,6 +814,7 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
   };
   const beginTour = (role) => {
     ui.onboardingRole=role;
+    if(role==='buyer'){ui.query='';ui.category='Все';ui.inStock=false;ui.minPrice='';ui.maxPrice='';}
     const wasPreview=ui.onboardingPreview&&savedTour?.role===role;
     if(!wasPreview)ui.onboardingStep=0;
     ui.onboarding=!onboardSeen(role)||wasPreview;
@@ -904,10 +945,11 @@ const productPage = (id) => { const p=product(id); if(!p)return notFound(); cons
     }
     case 'open-onboarding':
       ui.onboardingRole=studio()?'seller':'buyer';
+      if(ui.onboardingRole==='buyer'){ui.query='';ui.category='Все';ui.inStock=false;ui.minPrice='';ui.maxPrice='';}
       ui.onboardingStep=0;
       resumeOnboarding();break;
     case 'onboarding-resume':resumeOnboarding();break;
-    case 'onboarding-next':tourGoStep(ui.onboardingStep+1);break;
+    case 'onboarding-next':{const step=currentTourStep();const before=ui.onboardingStep;if(step?.mode==='click'){const target=tourTarget(step);const control=target?.matches?.('[data-action]')?target:target?.closest?.('[data-action]');if(control && !control.disabled)control.click();}if(ui.onboarding&&ui.onboardingStep===before)tourGoStep(before+1);break;}
     case 'onboarding-prev':tourGoStep(ui.onboardingStep-1);break;
     case 'onboarding-close':closeOnboarding();break;
 
