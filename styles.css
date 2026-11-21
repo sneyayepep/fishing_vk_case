@@ -618,3 +618,38 @@ body.filters-visible { overflow: hidden; }
 .modal-dialog:has(.checkout-form){margin:clamp(12px,3vh,30px) auto;max-height:calc(100dvh - 24px);animation:none!important}
 @media(max-width:850px){.buyer-city{font-size:11px}}
 @media(max-width:670px){.buyer-city{display:none}}
+
+
+/* Seller commission reporting: VK-like flat panels, no decorative borders. */
+.commission-section{margin:18px 0 24px;padding:24px;border:0;box-shadow:var(--shadow);min-width:0}
+.commission-heading{display:flex;gap:20px;justify-content:space-between;align-items:center;margin-bottom:20px}
+.commission-heading .eyebrow{margin:0 0 7px}
+.commission-heading h2{font-size:21px;margin:0 0 7px}
+.commission-heading p{font-size:12px;color:var(--muted-strong);margin:0}
+.commission-rate{background:var(--accent-soft);border-radius:14px;padding:11px 15px;color:var(--accent);font-size:22px;font-weight:770;letter-spacing:-.04em;white-space:nowrap;display:flex;flex-direction:column;align-items:center}
+.commission-rate small{font-size:10px;letter-spacing:0;font-weight:600}
+.commission-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:17px}
+.commission-kpi{padding:16px 14px;border-radius:13px;background:var(--field);min-width:0;display:flex;flex-direction:column;gap:7px}
+.commission-kpi>span{font-size:12px;color:var(--muted-strong)}
+.commission-kpi>strong{font-size:clamp(20px,2vw,27px);line-height:1.15;font-weight:780;letter-spacing:-.045em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.commission-kpi>small{font-size:11px;line-height:1.45;color:var(--muted)}
+.commission-paid{background:var(--accent-soft)}
+.commission-paid>strong{color:var(--accent)}
+.commission-toolbar{display:flex;gap:18px;justify-content:space-between;align-items:center;padding:5px 0 17px}
+.commission-toolbar p{max-width:680px;margin:0;font-size:11px;color:var(--muted-strong);line-height:1.55}
+.commission-pay-button{white-space:normal;text-align:center;flex-shrink:0}
+.commission-credit{color:var(--muted-strong);font-size:12px;margin:2px 0 17px}
+.commission-history{padding-top:15px;border-top:1px solid var(--stroke)}
+.commission-history>div:first-child{margin-bottom:13px}
+.commission-history h3{font-size:15px;margin:0 0 3px}
+.commission-history small{color:var(--muted);font-size:11px}
+.commission-history .data-table{min-width:570px}
+.commission-history .data-table td,.commission-history .data-table th{font-size:12px}
+.commission-history .commission-selected-row{background:var(--accent-soft)}
+.commission-current{color:var(--accent);display:inline-block;font-size:10px;font-weight:650;margin-left:8px}
+@media(max-width:1120px){.commission-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.commission-toolbar{align-items:stretch;flex-direction:column}.commission-pay-button{align-self:flex-start}}
+@media(max-width:570px){.commission-section{padding:16px}.commission-heading{align-items:flex-start}.commission-heading h2{font-size:18px}.commission-rate{font-size:18px;padding:9px}.commission-kpis{gap:8px}.commission-kpi{padding:13px 10px}.commission-kpi>strong{font-size:20px}.commission-pay-button{width:100%}}
+
+.commission-buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:1120px){.commission-buttons{justify-content:flex-start}}
+@media(max-width:570px){.commission-buttons{flex-direction:column}.commission-buttons>.btn{width:100%}}
